@@ -21,7 +21,10 @@ export MYBUILD=$(realpath ${MYBUILD})
 
 #
 # Main software
-source /opt/ilcsoft/muonc/init_ilcsoft.sh
+if [ -z "${MUCOLL_RELEASE_VERSION}" ]; then
+    #Setup Muon Collider software
+    source /opt/setup_mucoll.sh
+fi
 
 #
 # Add exts
