@@ -6,8 +6,8 @@
 
 # Settings
 
-IN_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/WarpX-out/..."
-OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/WarpX-out/..."
+IN_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/lcio/..."
+OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/..."
 
 random_postfix=`echo $RANDOM | md5sum | head -c 6`
 RUN_PATH="${SCRATCH}/wcd-simrun-${random_postfix}" #temporary unique running path

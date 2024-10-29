@@ -1,25 +1,15 @@
-# Template Workspace
-
-Template for developing custom Marlin packages. Fork this repository and rename to create your own project.
+# Beam-Beam interactions studies for Wakefield Collider Detector
 
 ## Repository Structure
 - `exts/` External packages not included with the ILC framework.
 - `packages/` All custom packages linked using git submodules.
+- `configs/` common configurations files
+- `geometry/` xml geometry files for ddsim
+- `scripts/` utility scripts 
 
 ## Setup Instructions
 
-### Container
-All commands are compatible and should be run inside the latest `gitlab-registry.cern.ch/muon-collider/muoncollider-docker/mucoll-sim:master-alma9` image (versions 2.8 and above).
-
-#### Apptainer
-```bash
-apptainer shell --cleanenv gitlab-registry.cern.ch/muon-collider/muoncollider-docker/mucoll-sim:master-alma9
-```
-
-#### Shifter
-```bash
-shifter --image gitlab-registry.cern.ch/muon-collider/muoncollider-docker/mucoll-sim:master-alma9 /bin/bash
-```
+See [wcd-docker](https://github.com/spg-berkeleylab/wcd-docker) for instructions to setup the container.
 
 ### Build Instructions
 Run the following commands from inside your container. The same commands will also work with a local installation of the ILC and Key4Hep software, with the exception of the first line.
@@ -40,4 +30,13 @@ The included `setup.sh` script is useful for defining all paths for the binaries
 Run the following at the start of every session. It has an optional argument to the build directory and is set to `build/` by default.
 ```bash
 source setup.sh [build]
+```
+
+## Simulations
+The file `configs/ddsim_steer_baseline.py` contains a baseline `ddsim` configuration.
+Specify the geometry setting the `WCD_GEO` environment variable, e.g.
+
+```bash
+export WCD_GEO=/global/cfs/cdirs/atlas/spgriso/WFA/WakefieldBeamStudiesWorkspace/geometry/MuColl/MuColl_v1/MuColl_v1.xml
+ddsim --steeringFile ${MYWORKSPACE}/configs/ddsim_steer_baseline.py --inputFile /global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/lcio/electron_electron_flat.slcio --outputFile /global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/MuColl_v1/bib-only/sim-electron_electron_flat.slcio
 ```
