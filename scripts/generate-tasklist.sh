@@ -1,8 +1,9 @@
 #!/bin/bash
 # Generate and print to screen the task list for a given input prefix ($1) and output prefix ($2).
-# Arguments: $0 in_prefix out_prefix [n_events_per_job n_events_per_file n_events_input [worker_script]]
-# Assumes:
-# - input in files with format ${in_prefix}_XXXX-YYYY.slcio, indicating that the file contains events from #XXXX to event number #YYYY
+# Arguments: $0 in_prefix out_prefix [n_events_per_job n_events_per_file n_events_input [worker_script]] > output-tasklist.txt
+# Assumes two possible input file patterns:
+# 1) input in files with format ${in_prefix}_XXXX-YYYY.slcio, indicating that the file contains events from #XXXX to event number #YYYY from previous processing steps;
+# 2) if running on single input files, provide n_events_input == n_events_per_file, and input will be ${in_prefix} (add .slcio to the argument)
 # Notes:
 # - you can further split longer lists as in the example that follows:
 #   split -l 50 -a 3 --numeric-suffixes=1 my-tasks.txt my-tasks-
@@ -26,9 +27,17 @@ for i_file in `seq 0 $((n_files-1))`; do
     if [ ${max_event} -gt ${n_events_input} ]; then
 	max_event=${n_events_input}
     fi
-    input_file="${in_prefix}_${min_event}-${max_event}.slcio"
-    out_file="${out_prefix}_${min_event}-${max_event}"
-
+    # check if we're processing multiple input files, or just one
+    if [ ${n_files} -eq 1 ]; then
+	# single input file from previous step
+	input_file="${in_prefix}"
+	out_file="${out_prefix}"
+    else
+	# multiple input files
+	input_file="${in_prefix}_${min_event}-${max_event}.slcio"
+	out_file="${out_prefix}_${min_event}-${max_event}"
+    fi
+	
     # split each file into sub-jobs
     n_tasks=$(( n_events_per_file / n_events_per_job ))
     if [ $((n_events_per_file % n_events_per_job)) != 0 ]; then

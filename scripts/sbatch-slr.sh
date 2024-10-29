@@ -6,12 +6,12 @@
 #SBATCH --qos=regular
 #SBATCH --time=02:00:00
 #SBATCH --tasks-per-node=1
-## SBATCH --image=infnpd/mucoll-ilc-framework:1.6-centos8
+## SBATCH --image=spagan/wcd:main-alma9
 ## SBATCH --export=SCRATCH
 ## SBATCH --array 1 10
 
 ###########
-# Submission script to slurm for sbatch
+# Worker-Node script for sbatch
 # Usage: $0 tasklist [workdir=$PWD/wkdir [nprocesses]]
 # Notes:
 # - nprocesses by defualt is determined from the number of tasks (but max. 256)
@@ -65,10 +65,10 @@ fi
 
 # Prepare to execute
 
-echo "$(date) About to execute on machine / cwd / arguments:"
-hostname
-uname -a
-pwd
+echo "$(date) About to execute:"
+echo "- host: "`hostname`
+echo "- OS: "`uname -a`
+echo " -pwd "`pwd`
 echo "tasklist = ${tasklist}"
 echo "proc = ${N_PARALLEL_JOBS}"
 
@@ -77,8 +77,8 @@ echo "proc = ${N_PARALLEL_JOBS}"
 #   cons: requires recent version of python & taskfarmer available in the container
 #shifter --module=cvmfs /bin/bash -c "pytaskfarmer.py --proc ${N_PARALLEL_JOBS} --workdir ${workdir} ${tasklist}"
 
-#2) Run pytaskfarmer using a shifter runner for MCD:
-pytaskfarmer.py --proc ${N_PARALLEL_JOBS} --workdir ${workdir} --runner mcd_shifter ${tasklist}
+#2) Run pytaskfarmer using a shifter runner for WCD:
+pytaskfarmer.py --proc ${N_PARALLEL_JOBS} --workdir ${workdir} --runner wcd_shifter ${tasklist}
 
 export PROCPID=${!}
 

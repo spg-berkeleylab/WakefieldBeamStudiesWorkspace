@@ -1,4 +1,4 @@
-## Setup and run ddsim instance
+## Setup and run ddsim instance; useful as task for pytaskfarmer or standalone
 ## Args: input_file output_prefix [nevents=-1 [skipevents=0]]
 ## Notes:
 ## - provided as template and, while it might fit many use-cases, it's meant to be customized
@@ -6,14 +6,14 @@
 
 # Settings
 
-USERNAME="rbgarg"
+USERNAME="spgriso"
 
-IN_PATH="/global/cfs/cdirs/atlas/${USERNAME}/MuonCollider/data/samples/mcprod-hZ_wzf_3mu/evt"
-OUT_PATH="/global/cfs/cdirs/atlas/${USERNAME}/MuonCollider/data/samples/mcprod-hZ_wzf_3mu/sim"
+IN_PATH="/global/cfs/cdirs/atlas/${USERNAME}/WFA/..."
+OUT_PATH="/global/cfs/cdirs/atlas/${USERNAME}/WFA/..."
 
 random_postfix=`echo $RANDOM | md5sum | head -c 6`
-RUN_PATH="${SCRATCH}/muc-simrun-${random_postfix}" #temporary unique running path
-CONFIG_PATH="/global/cfs/cdirs/atlas/spgriso/MuonCollider/data/samples/mcprod-hZ_wzf_3mu/sim/config"
+RUN_PATH="${SCRATCH}/wcd-simrun-${random_postfix}" #temporary unique running path
+SIM_CONFIG="/global/cfs/cdirs/atlas/spgriso/MuonCollider/data/samples/mcprod-hZ_wzf_3mu/sim/config/sim_steer.py"
 
 TIME="Time %E (%P CPU)\nMem %Kk/%Mk (avg/max): %Xk(shared) + %Dk(data)\nI/O %I+%O; swaps: %W"
 
@@ -77,7 +77,7 @@ cd ${RUN_PATH}
 #source /opt/ilcsoft/muonc/init_ilcsoft.sh # ILC sw already setup in the script
 
 #/usr/bin/time --format="${TIME}" --
-time ddsim --steeringFile ${CONFIG_PATH}/sim_steer.py --inputFile ${IN_FILE} --outputFile ${OUT_FILE_PREFIX}.slcio  --numberOfEvents ${N_EVENTS_PER_JOB} --skipNEvents ${N_SKIP_EVENTS}  &> ${OUT_FILE_PREFIX}.log 
+time ddsim --steeringFile ${SIM_CONFIG}/sim_steer.py --inputFile ${IN_FILE} --outputFile ${OUT_FILE_PREFIX}.slcio  --numberOfEvents ${N_EVENTS_PER_JOB} --skipNEvents ${N_SKIP_EVENTS}  &> ${OUT_FILE_PREFIX}.log 
 
 tell "ddsim DONE."
 
