@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""This script converts a FLUKA binary file to an SLCIO file with LCIO::MCParticle instances"""
+"""This script converts a WarpX beam-beam interaction output file to an SLCIO file with LCIO::MCParticle instances"""
 
 import os
 import argparse
