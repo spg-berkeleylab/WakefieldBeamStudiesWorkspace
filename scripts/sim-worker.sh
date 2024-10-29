@@ -6,14 +6,12 @@
 
 # Settings
 
-USERNAME="spgriso"
-
-IN_PATH="/global/cfs/cdirs/atlas/${USERNAME}/WFA/..."
-OUT_PATH="/global/cfs/cdirs/atlas/${USERNAME}/WFA/..."
+IN_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/WarpX-out/..."
+OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/WarpX-out/..."
 
 random_postfix=`echo $RANDOM | md5sum | head -c 6`
 RUN_PATH="${SCRATCH}/wcd-simrun-${random_postfix}" #temporary unique running path
-SIM_CONFIG="/global/cfs/cdirs/atlas/spgriso/MuonCollider/data/samples/mcprod-hZ_wzf_3mu/sim/config/sim_steer.py"
+SIM_CONFIG="/global/cfs/cdirs/atlas/spgriso/WFA/WakefieldBeamStudiesWorkspace/configs/ddsim_steer_baseline.py"
 
 TIME="Time %E (%P CPU)\nMem %Kk/%Mk (avg/max): %Xk(shared) + %Dk(data)\nI/O %I+%O; swaps: %W"
 
