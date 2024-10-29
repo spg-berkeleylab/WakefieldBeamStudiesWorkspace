@@ -10,23 +10,18 @@ from math import sqrt
 from pdb import set_trace as br
 from array import array
 from pyLCIO import UTIL, EVENT, IMPL, IO, IOIMPL
-
 import random
 import math
 
+
 parser = argparse.ArgumentParser(description='Convert WarpX simulation output to SLCIO file with MCParticles')
-parser.add_argument('--input_dir', metavar='FILE_IN', help='Input directory with WarpX simulation output', type=str)
-parser.add_argument('--file_out', metavar='FILE_OUT.slcio', help='Output SLCIO file')
+parser.add_argument('--inputDir', metavar='FILE_IN', help='Input directory with WarpX simulation output', type=str)
+parser.add_argument('--outputDir', metavar='FILE_OUT', help='Output directory with SLCIO files')
 parser.add_argument('-c', '--comment', metavar='TEXT',  help='Comment to be added to the header', type=str)
-parser.add_argument('-o', '--overwrite',  help='Overwrite existing output file', action='store_true', default=False)
+parser.add_argument('-s', '--splitByParticles',  help='Split by number of particles into multiple output files', action='store_true', default=False)
+parser.add_argument('-n', '--numParticlesPerFile',  help='Number of particles per file', type=int)
 
 args = parser.parse_args()
-
-if not os.path.isdir(args.input_dir):
-    print(f"Directory does not exist: {input_dir}. Please check the input again.")
-if not args.overwrite and os.path.isfile(args.file_out):
-	raise FileExistsError(f'Output file already exists: {args.file_out:s}')
-
 
 def extract_macroparticles_data(species_name):
     """
@@ -52,7 +47,7 @@ def extract_macroparticles_data(species_name):
         '/diags/bound/particles_at_yhi',
         '/diags/trajs',        
         ]:
-        ts = OpenPMDTimeSeries(f"{args.input_dir}" + folder_name)
+        ts = OpenPMDTimeSeries(f"{args.inputDir}" + folder_name)
         x, y, z, px, py, pz, m, q = ts.get_particle( ['x', 'y', 'z', 'ux', 'uy', 'uz', 'mass', 'charge'], 
             iteration=ts.iterations[-1], species=species_name )
 
@@ -87,58 +82,116 @@ def extract_macroparticles_data(species_name):
         conversion_factor = 1.
     # Then convert to eV/c
     conversion_factor *= c/e
-    px_all *= conversion_factor/1e6
-    py_all *= conversion_factor/1e6
-    pz_all *= conversion_factor/1e6
+    x_all *= 0.001
+    y_all *= 0.001
+    z_all *= 0.001
+    px_all *= conversion_factor/1e9
+    py_all *= conversion_factor/1e9
+    pz_all *= conversion_factor/1e9
     q_all *= 1/e
-    m_all *= c**2/(e*1e6)
+    m_all *= c**2/(e*1e9)
     
     return x_all, y_all, z_all, px_all, py_all, pz_all, q_all, m_all, t_all
 
 
-######################################## Start of the processing
+def main():
 
-#define list of species with their PDGID as the key value
-dict_species = {'ele1':11, 'ele2':11, 'pos1':-11, 'pos2':-11, 'pho1':22, 'pho2':22}
+    if not os.path.isdir(args.inputDir):
+        print(f"Directory does not exist: {inputDir}. Please check the input again.")
 
-# Initialize the LCIO file writer
-wrt = IOIMPL.LCFactory.getInstance().createLCWriter()
-wrt.open(args.file_out, EVENT.LCIO.WRITE_NEW)
+    if not os.path.exists(args.outputDir):
+        os.makedirs(args.outputDir)
+        print(f"Directory '{args.outputDir}' created.")
+    else:
+        for filename in os.listdir(args.outputDir):
+            file_path = os.path.join(args.outputDir, filename)
+            try:
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+            except Exception as e:
+                print(f"Error deleting {file_path}: {e}")            
 
-# Write a RunHeader
-run = IMPL.LCRunHeaderImpl()
-run.setRunNumber(0)
-wrt.writeRunHeader(run)
+    #define list of species with their PDGID as the key value
+    dict_species = {'ele1':11, 'ele2':11, 'pos1':-11, 'pos2':-11, 'pho1':22, 'pho2':22}
 
-nEvents = 1
-col = None
-evt = None
-col = IMPL.LCCollectionVec(EVENT.LCIO.MCPARTICLE)
-evt = IMPL.LCEventImpl()
-evt.setEventNumber(0)
-evt.addCollection(col, 'MCParticle')
+    # Write a RunHeader
+    run = IMPL.LCRunHeaderImpl()
+    run.setRunNumber(0)
+    countFiles = 0
 
-for sp, pid in dict_species.items():
+    if not args.splitByParticles:
+        filePath = os.path.join(args.outputDir, "out.slcio")
+        print(f"Creating file {filePath}")
+	# Initialize the LCIO file writer
+        wrt = IOIMPL.LCFactory.getInstance().createLCWriter()
+        wrt.open(filePath, EVENT.LCIO.WRITE_NEW)
+        wrt.writeRunHeader(run)
+        col = None
+        evt = None
+        col = IMPL.LCCollectionVec(EVENT.LCIO.MCPARTICLE)
+        evt = IMPL.LCEventImpl()
+        evt.setEventNumber(0)
+        evt.addCollection(col, 'MCParticle')
+
+    for sp, pid in dict_species.items():
         x, y, z, px, py, pz, q, m, t = extract_macroparticles_data(sp)
 
+        if args.splitByParticles:
+            filePath = os.path.join(args.outputDir, f"out_{countFiles}.slcio")
+            print(f"Creating file {filePath}")                
+            # Initialize the LCIO file writer
+            wrt = IOIMPL.LCFactory.getInstance().createLCWriter()
+            wrt.open(filePath, EVENT.LCIO.WRITE_NEW)
+            wrt.writeRunHeader(run)
+            col = None
+            evt = None
+            col = IMPL.LCCollectionVec(EVENT.LCIO.MCPARTICLE)
+            evt = IMPL.LCEventImpl()
+            evt.setEventNumber(0)
+            evt.addCollection(col, 'MCParticle')
+
+
         for i in range(0,len(x)):
-                # Creating the particle with original parameters
-                particle = IMPL.MCParticleImpl()
-                particle.setPDG(pid)
-                particle.setGeneratorStatus(1)
-                particle.setTime(t[i])
-                particle.setMass(m[i])
-                particle.setCharge(q[i])
-                pos = np.array([x[i], y[i], z[i]])
-                particle.setVertex(pos)
-                mom = np.array([px[i], py[i], pz[i]])
-                particle.setMomentum(mom)
-                # Adding particle to the collection
-                col.addElement(particle)
-                if i%1000 == 0:
-                        print(f'Wrote {i} {sp} particles')
+            # Creating the particle with original parameters
+            particle = IMPL.MCParticleImpl()
+            particle.setPDG(pid)
+            particle.setGeneratorStatus(1)
+            particle.setTime(t[i])
+            particle.setMass(m[i])
+            particle.setCharge(q[i])
+            pos = np.array([x[i], y[i], z[i]])
+            particle.setVertex(pos)
+            mom = np.array([px[i], py[i], pz[i]])
+            particle.setMomentum(mom)
+            # Adding particle to the collection
+            col.addElement(particle)
+            if i>0 and i%10000 == 0:
+                print(f'Wrote {i} {sp} particles')
+            if args.splitByParticles and col.getNumberOfElements()%args.numParticlesPerFile==0:
+                wrt.writeEvent(evt)
+                wrt.close()
+                countFiles += 1
+                filePath = os.path.join(args.outputDir, f"out_{countFiles}.slcio")
+                print(f"Creating file {filePath}")
+                wrt = IOIMPL.LCFactory.getInstance().createLCWriter()
+                wrt.open(filePath, EVENT.LCIO.WRITE_NEW)
+                wrt.writeRunHeader(run)
+                col = None
+                evt = None
+                col = IMPL.LCCollectionVec(EVENT.LCIO.MCPARTICLE)
+                evt = IMPL.LCEventImpl()
+                evt.setEventNumber(0)
+                evt.addCollection(col, 'MCParticle')
 
-wrt.writeEvent(evt)
-print(f'Wrote event: {nEvents:d} with {col.getNumberOfElements()} particles')
+            if args.splitByParticles and i==len(x)-1:
+                wrt.writeEvent(evt)
+                wrt.close()
+                countFiles += 1
 
-wrt.close()
+
+    if not args.splitByParticles:
+        wrt.writeEvent(evt)
+        wrt.close()
+
+if __name__ == "__main__":
+    main()
