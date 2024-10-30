@@ -82,14 +82,11 @@ def extract_macroparticles_data(species_name):
         conversion_factor = 1.
     # Then convert to eV/c
     conversion_factor *= c/e
-    x_all *= 0.001
-    y_all *= 0.001
-    z_all *= 0.001
     px_all *= conversion_factor/1e9
     py_all *= conversion_factor/1e9
     pz_all *= conversion_factor/1e9
     q_all *= 1/e
-    m_all *= c**2/(e*1e9)
+    m_all *= (conversion_factor*c)/1e9
     
     return x_all, y_all, z_all, px_all, py_all, pz_all, q_all, m_all, t_all
 
