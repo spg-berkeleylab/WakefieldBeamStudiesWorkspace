@@ -10,7 +10,7 @@
         <vis name="NozzleBCHVis" alpha="1.0" r="0.3" g="1.0" b="1.0" showDaughters="false" visible="true"/>
     </display>
     
-    
+<!--    
     <detectors>
         <comment>Nozzle</comment>
         
@@ -57,4 +57,7 @@
 
 
     </detectors>
+
+-->
+
 </lccdd>

@@ -230,7 +230,7 @@
     <include ref="${DD4hepINSTALL}/DDDetectors/compact/detector_types.xml"/>
 
     <include ref="Beampipe_o1_v01_02.xml"/>
-<!--    <include ref="Nozzle_10deg_v0.xml"/> ->
+    <include ref="Nozzle_10deg_v0.xml"/> <!-- actual element is disabled inside this XML, kept for constants -->
     <!-- <include ref="BeamInstrumentation_o1_v01_01.xml"/> -->
 
     <include ref="Vertex_o2_v06_01.xml"/>
