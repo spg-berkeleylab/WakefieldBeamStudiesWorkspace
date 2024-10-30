@@ -12,7 +12,7 @@ from array import array
 from pyLCIO import UTIL, EVENT, IMPL, IO, IOIMPL
 import random
 import math
-
+import ROOT
 
 parser = argparse.ArgumentParser(description='Convert WarpX simulation output to SLCIO file with MCParticles')
 parser.add_argument('--inputDir', metavar='FILE_IN', help='Input directory with WarpX simulation output', type=str)
@@ -20,6 +20,7 @@ parser.add_argument('--outputDir', metavar='FILE_OUT', help='Output directory wi
 parser.add_argument('-c', '--comment', metavar='TEXT',  help='Comment to be added to the header', type=str)
 parser.add_argument('-s', '--splitByParticles',  help='Split by number of particles into multiple output files', action='store_true', default=False)
 parser.add_argument('-n', '--numParticlesPerFile',  help='Number of particles per file', type=int)
+parser.add_argument('-f', '--filterGenParticles', help='Filter gen MC particles', action='store_true', default=False)
 
 args = parser.parse_args()
 
@@ -86,10 +87,14 @@ def extract_macroparticles_data(species_name):
     py_all *= conversion_factor/1e9
     pz_all *= conversion_factor/1e9
     q_all *= 1/e
-    m_all *= (conversion_factor*c)/1e9
+    m_all *= c**2/(e*1e9)
     
     return x_all, y_all, z_all, px_all, py_all, pz_all, q_all, m_all, t_all
 
+def calc_energy(px,py,pz,m):
+    e = sqrt((px**2 + py**2 + pz**2) + (m**2))
+
+    return e
 
 def main():
 
@@ -149,6 +154,9 @@ def main():
 
 
         for i in range(0,len(x)):
+            lvec = ROOT.TLorentzVector()
+            lvec.SetPxPyPzE(px[i],py[i],pz[i],calc_energy(px[i],py[i],pz[i],m[i]))
+            
             # Creating the particle with original parameters
             particle = IMPL.MCParticleImpl()
             particle.setPDG(pid)
@@ -160,30 +168,40 @@ def main():
             particle.setVertex(pos)
             mom = np.array([px[i], py[i], pz[i]])
             particle.setMomentum(mom)
-            # Adding particle to the collection
-            col.addElement(particle)
-            if i>0 and i%10000 == 0:
-                print(f'Wrote {i} {sp} particles')
-            if args.splitByParticles and col.getNumberOfElements()%args.numParticlesPerFile==0:
-                wrt.writeEvent(evt)
-                wrt.close()
-                countFiles += 1
-                filePath = os.path.join(args.outputDir, f"out_{countFiles}.slcio")
-                print(f"Creating file {filePath}")
-                wrt = IOIMPL.LCFactory.getInstance().createLCWriter()
-                wrt.open(filePath, EVENT.LCIO.WRITE_NEW)
-                wrt.writeRunHeader(run)
-                col = None
-                evt = None
-                col = IMPL.LCCollectionVec(EVENT.LCIO.MCPARTICLE)
-                evt = IMPL.LCEventImpl()
-                evt.setEventNumber(0)
-                evt.addCollection(col, 'MCParticle')
 
-            if args.splitByParticles and i==len(x)-1:
-                wrt.writeEvent(evt)
-                wrt.close()
-                countFiles += 1
+            # Adding particle to the collection
+            if args.filterGenParticles:
+                if pid==22 and abs(lvec.Eta())<5:
+                    col.addElement(particle)
+                if abs(pid)==11 and lvec.Pt()>0.01:
+                    col.addElement(particle)
+            else:
+                col.addElement(particle)
+                
+            if col.getNumberOfElements()%10000 == 0:
+                print(f'Wrote {col.getNumberOfElements()} {sp} particles')
+
+            if args.splitByParticles:
+                if col.getNumberOfElements()%args.numParticlesPerFile==0:
+                    wrt.writeEvent(evt)
+                    wrt.close()
+                    countFiles += 1
+                    filePath = os.path.join(args.outputDir, f"out_{countFiles}.slcio")
+                    print(f"Creating file {filePath}")
+                    wrt = IOIMPL.LCFactory.getInstance().createLCWriter()
+                    wrt.open(filePath, EVENT.LCIO.WRITE_NEW)
+                    wrt.writeRunHeader(run)
+                    col = None
+                    evt = None
+                    col = IMPL.LCCollectionVec(EVENT.LCIO.MCPARTICLE)
+                    evt = IMPL.LCEventImpl()
+                    evt.setEventNumber(0)
+                    evt.addCollection(col, 'MCParticle')
+
+                if i==len(x)-1:
+                        wrt.writeEvent(evt)
+                        wrt.close()
+                        countFiles += 1
 
 
     if not args.splitByParticles:
