@@ -142,16 +142,15 @@ def main():
     col, evt = lcioEvt(col, evt)
     # Initialize the LCIO file writer
     wrt = IOIMPL.LCFactory.getInstance().createLCWriter()
+    filePath = ""
     
     if args.numParticlesPerFile<0:
         filePath = os.path.join(args.outputDir, "out.slcio")
-        print(f"Creating file {filePath}")
-        wrt = openLCIO(filePath, wrt)
     else:
         filePath = os.path.join(args.outputDir, f"out_{countFiles}.slcio")
-        print(f"Creating file {filePath}")
-        wrt = openLCIO(filePath, wrt)
 
+    print(f"Creating file {filePath}")
+    wrt = openLCIO(filePath, wrt)
         
     for sp, pid in dict_species.items():
         x, y, z, px, py, pz, q, m, t = extract_macroparticles_data(sp)
