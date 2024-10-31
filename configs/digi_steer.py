@@ -40,6 +40,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--OverlayIPNumberBackground",
+    help="Number of background files used for IP overlay",
+    type=str,
+    default="1", #Magic number associated to the specific simulation setup
+)
+
+parser.add_argument(
     "--doOverlayFull",
     help="Do BIB overlay",
     action="store_true",
@@ -763,7 +770,7 @@ OverlayIP.Parameters = {
     "MCPhysicsParticleCollectionName": ["MCPhysicsParticles_IP"],
     "MergeMCParticles": ["true"],
     "NBunchtrain": ["1"],
-    "NumberBackground": ["1"],
+    "NumberBackground": [the_args.OverlayIPNumberBackground],
     "PhysicsBX": ["1"],
     "Poisson_random_NOverlay": ["false"],
     "RandomBx": ["false"],
@@ -1027,10 +1034,11 @@ else:
         LCIOWriter_light.Parameters["DropCollectionNames"]=["VXDBarrelHits_HTF", "VXDEndcapHits_HTF", "ITBarrelHits_HTF", "ITEndcapHits_HTF", "OTBarrelHits_HTF", "OTEndcapHits_HTF", "VXDBarrelHits_realDigi", "VXDEndcapHits_realDigi", "ITBarrelHits_realDigi", "ITEndcapHits_realDigi", "OTBarrelHits_realDigi", "OTEndcapHits_realDigi", "VertexBarrelCollection_HTF", "VertexEndcapCollection_HTF", "InnerTrackerBarrelCollection_HTF", "InnerTrackerEndcapCollection_HTF", "OuterTrackerBarrelCollection_HTF", "OuterTrackerEndcapCollection_HTF"]
     algList.append(LCIOWriter_light)
 
+#from k4FWCore import ApplicationMgr
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = 10,
                 ExtSvc = [evtsvc],
                 OutputLevel=INFO
               )
+#                EvtMax   = 10,

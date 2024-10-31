@@ -1,0 +1,3 @@
+[submodule "packages/MuonCVXDDigitiser"]
+	path = packages/MuonCVXDDigitiser
+	url = git@github.com:MuonColliderSoft/MuonCVXDDigitiser.git

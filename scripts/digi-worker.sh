@@ -10,11 +10,9 @@
 # Settings
 
 IN_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/digi/MuColl_v1/single-particles/single-nu/"
-OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/digi/MuColl_v1/bib-only/"
-BIB_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/MuColl_v1/bib-only/"
-
-random_postfix=`echo $RANDOM | md5sum | head -c 6`
-RUN_PATH="${SCRATCH}/muc-recrun-${random_postfix}" #temporary unique running path
+OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/digi/MuColl_v1/bib-only/electron_electron_flat/"
+BIB_FILES="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/MuColl_v1/bib-only/electron_electron_flat/sim-out-merged.slcio"
+NBIB_EVENTS=15 #electron_positron_round: 145, electron_positron_flat: 17, electron_electron_flat: 15, electron_electron_round: 0
 
 CONFIG_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/WakefieldBeamStudiesWorkspace/configs"
 CONFIG_FILE="digi_steer.py" #relative to $CONFIG_PATH
@@ -22,13 +20,15 @@ GEO_CONFIG="/global/cfs/cdirs/atlas/spgriso/WFA/WakefieldBeamStudiesWorkspace/ge
 WORKSPACE_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/WakefieldBeamStudiesWorkspace/"
 MYBUILD="build" #build folder (either relative to $WORKSPACE_PATH or absolute path
 
+random_postfix=`echo $RANDOM | md5sum | head -c 6`
+RUN_PATH="${SCRATCH}/muc-recrun-${random_postfix}" #temporary unique running path
 TIME="Time %E (%P CPU)\nMem %Kk/%Mk (avg/max): %Xk(shared) + %Dk(data)\nI/O %I+%O; swaps: %W"
 
 
 # Utility functions
 tell () {
     now=`date +"%4Y.%m.%d-%H.%M.%S"`
-    echo "${now} reco-worker: $1"
+    echo "${now} digi-worker: $1"
 }
 
 quit () {
@@ -59,7 +59,6 @@ if [ -z "$2" ]; then
     quit "ERROR! Usage: $0 input_file output_prefix [nevents=-1 [skipevents=0 [nBIB=10]]]" 1
 fi
 OUT_FILE_PREFIX=$2
-
 
 N_EVENTS_PER_JOB=-1
 if ! [ -z "$3" ]; then
@@ -106,7 +105,7 @@ cp -r ${CONFIG_PATH}/* . #copy the whole set of config files
 
 # If output contains a folder, create it
 OUT_HAS_FOLDER=`dirname ${OUT_FILE_PREFIX}`
-if ! [ -z "$OUT_FILE_PREFIX" ]; then
+if ! [ "$OUT_FILE_PREFIX" != "." ]; then
     # Create output folder
     tell "Creating output sub-folder: ${OUT_HAS_FOLDER}"
     mkdir ${OUT_HAS_FOLDER}
@@ -120,9 +119,10 @@ if [ -z "${WCD_VER}" ]; then
 fi
 #/usr/bin/time --format="${TIME}" --
 
-NOBIB_OPTS="--OverlayFullPathToMuPlus "" --OverlayFullPathToMuMinus "" --OverlayFullNumberBackground 0"
+NOBIB_OPTS="--OverlayFullPathToMuPlus \"\" --OverlayFullPathToMuMinus \"\" --OverlayFullNumberBackground 0"
+OVERLAYIP_OPTS="--doOverlayIP --OverlayIPBackgroundFileNames ${BIB_FILES} --OverlayIPNumberBackground ${NBIB_EVENTS}"
 export WCD_GEO=${GEO_CONFIG}
-k4run --num-events ${N_EVENTS_PER_JOB} --LcioEvent.Files ${IN_FILE} ${NOBIB_OPTS} --doOverlayIP --OverlayIPBackgroundFileNames="${BIBs[*]}" ${CONFIG_FILE} &> ${OUT_FILE_PREFIX}.log
+k4run --num-events ${N_EVENTS_PER_JOB} ${CONFIG_FILE} --LcioEvent.Files ${IN_FILE} ${NOBIB_OPTS} ${OVERLAYIP_OPTS} &> ${OUT_FILE_PREFIX}.log
 # --global.SkipNEvents=${N_SKIP_EVENTS}
 
 tell "k4run DONE."
