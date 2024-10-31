@@ -6,8 +6,11 @@
 
 # Settings
 
-IN_PATH="/global/cfs/cdirs/atlas/arastogi/WFA/slcio_out/Files_100K/"
+IN_PATH="/global/cfs/cdirs/atlas/arastogi/WFA/slcio_out/Files_100K/WithPhotonEtaElePtFilters/"
 OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/MuColl_v1/bib-only/"
+#IN_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/single-particles/"
+#OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/single-particles/"
+
 
 random_postfix=`echo $RANDOM | md5sum | head -c 6`
 RUN_PATH="${SCRATCH}/wcd-simrun-${random_postfix}" #temporary unique running path
@@ -31,6 +34,7 @@ quit () {
 copyout() {
   IN=$1
   OUT=$2
+  echo "Moving ${PWD}/${IN} -> ${OUT_PATH}/${OUT}"
   if [ -f $1 ]; then
   	if ! mv ${IN} ${OUT_PATH}/${OUT} ; then
 	    tell "ERROR! Failed to transfer ${IN} -> ${OUT}"
@@ -88,7 +92,7 @@ fi
 # Run ddsim
 #/usr/bin/time --format="${TIME}" --
 export WCD_GEO=${GEO_CONFIG}
-ddsim --steeringFile ${SIM_CONFIG} --inputFile ${IN_FILE} --outputFile ${OUT_FILE_PREFIX}.slcio  --numberOfEvents ${N_EVENTS_PER_JOB} --skipNEvents ${N_SKIP_EVENTS} #>& ${OUT_FILE_PREFIX}.log 
+ddsim --steeringFile ${SIM_CONFIG} --inputFile ${IN_FILE} --outputFile ${OUT_FILE_PREFIX}.slcio  --numberOfEvents ${N_EVENTS_PER_JOB} --skipNEvents ${N_SKIP_EVENTS} >& ${OUT_FILE_PREFIX}.log 
 
 tell "ddsim DONE."
 
@@ -97,7 +101,7 @@ tell "Copying output from current folder ($PWD) to ${OUT_PATH}"
 ls -lh
 tell "----------"
 
-copyout ${OUT_FILE_PREFIX}.slcio ""
-copyout ${OUT_FILE_PREFIX}.log ""
+copyout ${OUT_FILE_PREFIX}.slcio ${OUT_FILE_PREFIX}.slcio
+copyout ${OUT_FILE_PREFIX}.log ${OUT_FILE_PREFIX}.log
 
 tell "All Done."

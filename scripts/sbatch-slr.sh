@@ -4,7 +4,7 @@
 #SBATCH --account=atlas
 #SBATCH --constraint=cpu
 #SBATCH --qos=regular
-#SBATCH --time=01:00:00
+#SBATCH --time=04:00:00
 #SBATCH --tasks-per-node=1
 ## SBATCH --image=spagan/wcd:main-alma9 -- deprecated, launch shifter manually below
 ## SBATCH --export=SCRATCH
