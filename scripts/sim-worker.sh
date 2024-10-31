@@ -6,12 +6,13 @@
 
 # Settings
 
-IN_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/lcio/..."
-OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/..."
+IN_PATH="/global/cfs/cdirs/atlas/arastogi/WFA/slcio_out/Files_100K/"
+OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/MuColl_v1/bib-only/"
 
 random_postfix=`echo $RANDOM | md5sum | head -c 6`
 RUN_PATH="${SCRATCH}/wcd-simrun-${random_postfix}" #temporary unique running path
 SIM_CONFIG="/global/cfs/cdirs/atlas/spgriso/WFA/WakefieldBeamStudiesWorkspace/configs/ddsim_steer_baseline.py"
+GEO_CONFIG="/global/cfs/cdirs/atlas/spgriso/WFA/WakefieldBeamStudiesWorkspace/geometry/MuColl/MuColl_v1/MuColl_v1.xml"
 
 TIME="Time %E (%P CPU)\nMem %Kk/%Mk (avg/max): %Xk(shared) + %Dk(data)\nI/O %I+%O; swaps: %W"
 
@@ -50,13 +51,11 @@ if [ -z "$2" ]; then
 fi
 OUT_FILE_PREFIX=$2
 
-if [ -z "$3" ]; then
-    N_EVENTS_PER_JOB=-1
-else
+N_EVENTS_PER_JOB=-1
+N_SKIP_EVENTS=0
+if ! [ -z "$3" ]; then
     N_EVENTS_PER_JOB=$3
-    if [ -z "$4" ]; then
-	N_SKIP_EVENTS=0
-    else
+    if ! [ -z "$4" ]; then
 	N_SKIP_EVENTS=$4
     fi
     # update output file
@@ -65,17 +64,31 @@ else
 fi
 
 tell "Input: ${IN_FILE} (start evt: ${N_SKIP_EVENTS}, n. evt: ${N_EVENTS_PER_JOB})."
-tell "Output: ${OUT_FILE_PREFIX}.slcio/.log"
+tell "Output (prefix): ${OUT_FILE_PREFIX}"
 
-# Run ddsim
+# Preparing running folder
 tell "Running ddsim in ${RUN_PATH}..."
 mkdir -p ${RUN_PATH}
 cd ${RUN_PATH}
 
-#source /opt/ilcsoft/muonc/init_ilcsoft.sh # ILC sw already setup in the script
+# If output contains a folder, create it
+OUT_HAS_FOLDER=`dirname ${OUT_FILE_PREFIX}`
+if ! [ -z "$OUT_FILE_PREFIX" ]; then
+    # Create output folder
+    tell "Creating output sub-folder: ${OUT_HAS_FOLDER}"
+    mkdir ${OUT_HAS_FOLDER}
+fi
 
+# Prepare to run - setup software only if needed
+if [ -z "${WCD_VER}" ]; then
+    echo "Setup WCD software"
+    source /opt/setup_mucoll.sh
+fi
+
+# Run ddsim
 #/usr/bin/time --format="${TIME}" --
-time ddsim --steeringFile ${SIM_CONFIG}/sim_steer.py --inputFile ${IN_FILE} --outputFile ${OUT_FILE_PREFIX}.slcio  --numberOfEvents ${N_EVENTS_PER_JOB} --skipNEvents ${N_SKIP_EVENTS}  &> ${OUT_FILE_PREFIX}.log 
+export WCD_GEO=${GEO_CONFIG}
+ddsim --steeringFile ${SIM_CONFIG} --inputFile ${IN_FILE} --outputFile ${OUT_FILE_PREFIX}.slcio  --numberOfEvents ${N_EVENTS_PER_JOB} --skipNEvents ${N_SKIP_EVENTS} #>& ${OUT_FILE_PREFIX}.log 
 
 tell "ddsim DONE."
 

@@ -4,9 +4,9 @@
 #SBATCH --account=atlas
 #SBATCH --constraint=cpu
 #SBATCH --qos=regular
-#SBATCH --time=02:00:00
+#SBATCH --time=01:00:00
 #SBATCH --tasks-per-node=1
-## SBATCH --image=spagan/wcd:main-alma9
+## SBATCH --image=spagan/wcd:main-alma9 -- deprecated, launch shifter manually below
 ## SBATCH --export=SCRATCH
 ## SBATCH --array 1 10
 
@@ -20,9 +20,16 @@
 #   where XXX is the 3-digits zero-padded ${SLURM_ARRAY_TASK_ID}
 ###########
 
+# Settings
+############
+# Pytaskfarmer (https://gitlab.cern.ch/berkeleylab/pytaskfarmer) location
+PYTASKFARMER=${HOME}/utils/pytaskfarmer/pytaskfarmer.py
+
 
 # Utility functions for job handling
+############
 
+# Handle term signal
 function handle_signal
 {
     echo "$(date) bash is being killed, also kill ${PROCPID}"
@@ -65,20 +72,28 @@ fi
 
 # Prepare to execute
 
+echo "-------- sbatch-slr.sh -------------------"
 echo "$(date) About to execute:"
 echo "- host: "`hostname`
 echo "- OS: "`uname -a`
-echo " -pwd "`pwd`
+echo "- pwd: "`pwd`
 echo "tasklist = ${tasklist}"
+echo "workdir = ${workdir}"
 echo "proc = ${N_PARALLEL_JOBS}"
+echo "------------------------------------------"
+
+if ! [ -x ${PYTASKFARMER} ]; then
+    tell "ERROR: Cannot find pytaskfarmer, adjust settings in sbatch-slr.sh. Looked in: ${PYTASKFARMER}"
+    exit 1
+fi
 
 #1) Run pytaskfarmer inside the container (uncomment the image option for SBATCH above)
 #   pro: run shifter only once,
 #   cons: requires recent version of python & taskfarmer available in the container
-#shifter --module=cvmfs /bin/bash -c "pytaskfarmer.py --proc ${N_PARALLEL_JOBS} --workdir ${workdir} ${tasklist}"
+#shifter --image=spagan/wcd:main-alma9 -- /bin/bash -c echo \"python ${PYTASKFARMER} --proc ${N_PARALLEL_JOBS} --workdir ${workdir} ${tasklist}\"
 
 #2) Run pytaskfarmer using a shifter runner for WCD:
-pytaskfarmer.py --proc ${N_PARALLEL_JOBS} --workdir ${workdir} --runner wcd_shifter ${tasklist}
+${PYTASKFARMER} --proc ${N_PARALLEL_JOBS} --workdir ${workdir} --runner wcd_shifter ${tasklist}
 
 export PROCPID=${!}
 
