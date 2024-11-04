@@ -49,7 +49,7 @@ InitDD4hep = MarlinProcessorWrapper("InitDD4hep")
 InitDD4hep.OutputLevel = WARNING
 InitDD4hep.ProcessorType = "InitializeDD4hep"
 InitDD4hep.Parameters = {
-                         "DD4hepXMLFile": [os.environ.get('MUCOLL_GEO')],
+                         "DD4hepXMLFile": [os.environ.get('WCD_GEO')],
                          "EncodingStringParameterName": ["GlobalTrackerReadoutID"]
                          }
 
@@ -66,22 +66,39 @@ MyTrackTruth.Parameters = {
 MyClusterShapeAnalysis = MarlinProcessorWrapper("MyClusterShapeAnalysis")
 MyClusterShapeAnalysis.OutputLevel = WARNING
 MyClusterShapeAnalysis.ProcessorType = "ClusterShapeHistProc"
+# MyClusterShapeAnalysis.Parameters = {
+#                                      "IBRelationCollection": ["IBTrackerHitsRelations"],
+#                                      "IBTrackerHitsCollection": ["IBTrackerHits"],
+#                                      "IERelationCollection": ["IETrackerHitsRelations"],
+#                                      "IETrackerHitsCollection": ["IETrackerHits"],
+#                                      "MCParticleCollection": ["MCParticle"],
+#                                      "MCTrackRelationCollection": ["MCParticle_SiTracks"],
+#                                      "OBRelationCollection": ["OBTrackerHitsRelations"],
+#                                      "OBTrackerHitsCollection": ["OBTrackerHits"],
+#                                      "OERelationCollection": ["OTEndcapHitsRelations"],
+#                                      "OETrackerHitsCollection": ["OTEndcapHits"],
+#                                      "TrackCollection": ["SiTracks"],
+#                                      "VBRelationCollection": ["VBTrackerHitsRelations"],
+#                                      "VBTrackerHitsCollection": ["VBTrackerHits"],
+#                                      "VERelationCollection": ["VETrackerHitsRelations"],
+#                                      "VETrackerHitsCollection": ["VETrackerHits"]
+#                                      }
 MyClusterShapeAnalysis.Parameters = {
-                                     "IBRelationCollection": ["IBTrackerHitsRelations"],
-                                     "IBTrackerHitsCollection": ["IBTrackerHits"],
-                                     "IERelationCollection": ["IETrackerHitsRelations"],
-                                     "IETrackerHitsCollection": ["IETrackerHits"],
+                                     "IBRelationCollection": [""],
+                                     "IBTrackerHitsCollection": [""],
+                                     "IERelationCollection": [""],
+                                     "IETrackerHitsCollection": [""],
                                      "MCParticleCollection": ["MCParticle"],
-                                     "MCTrackRelationCollection": ["MCParticle_SiTracks"],
-                                     "OBRelationCollection": ["OBTrackerHitsRelations"],
-                                     "OBTrackerHitsCollection": ["OBTrackerHits"],
-                                     "OERelationCollection": ["OTEndcapHitsRelations"],
-                                     "OETrackerHitsCollection": ["OTEndcapHits"],
-                                     "TrackCollection": ["SiTracks"],
-                                     "VBRelationCollection": ["VBTrackerHitsRelations"],
-                                     "VBTrackerHitsCollection": ["VBTrackerHits"],
-                                     "VERelationCollection": ["VETrackerHitsRelations"],
-                                     "VETrackerHitsCollection": ["VETrackerHits"]
+                                     "MCTrackRelationCollection": [""],
+                                     "OBRelationCollection": [""],
+                                     "OBTrackerHitsCollection": [""],
+                                     "OERelationCollection": [""],
+                                     "OETrackerHitsCollection": [""],
+                                     "TrackCollection": [""],
+                                     "VBRelationCollection": ["VXDBarrelHitsRelations_realDigi"],
+                                     "VBTrackerHitsCollection": ["VXDBarrelHits_realDigi"],
+                                     "VERelationCollection": ["VXDEndcapHitsRelations_realDigi"],
+                                     "VETrackerHitsCollection": ["VXDEndcapHits_realDigi"]
                                      }
 
 algList.append(MyAIDAProcessor)
@@ -93,7 +110,7 @@ algList.append(MyClusterShapeAnalysis)
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
-                EvtMax   = 10,
                 ExtSvc = [evtsvc],
+                EvtMax   = -1,
                 OutputLevel=WARNING
               )
