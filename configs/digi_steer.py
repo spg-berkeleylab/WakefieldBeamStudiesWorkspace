@@ -874,10 +874,12 @@ HitTimeFilter_VXB.OutputLevel = INFO
 HitTimeFilter_VXB.ProcessorType = "FilterTimeHits"
 HitTimeFilter_VXB.Parameters = {
     "TrackerHitInputCollections": ["VXDBarrelHits_realDigi"],
+    "TrackerHitConstituentsInputCollections": ["VBPixels"],
     "TrackerSimHitInputCollections": ["VertexBarrelCollection"],
     "TrackerHitInputRelations": ["VXDBarrelHitsRelations_realDigi"],
     "TrackerHitOutputCollections": ["VXDBarrelHits"+labelTrkDigiCollection],
-    "TrackerSimHitOutputCollections": ["VertexBarrelCollection_HTF"],
+    "TrackerHitConstituentsOutputCollections": ["VBPixels"+labelTrkDigiCollection],
+    "TrackerSimHitOutputCollections": ["VertexBarrelCollection"+labelTrkDigiCollection],
     "TrackerHitOutputRelations": ["VXDBarrelHitsRelations"+labelTrkDigiCollection],
     "TimeLowerLimit": ["-0.09"],
     "TimeUpperLimit": ["0.15"],
@@ -889,10 +891,12 @@ HitTimeFilter_VXE.OutputLevel = INFO
 HitTimeFilter_VXE.ProcessorType = "FilterTimeHits"
 HitTimeFilter_VXE.Parameters = {
     "TrackerHitInputCollections": ["VXDEndcapHits_realDigi"],
+    "TrackerHitConstituentsInputCollections": ["VEPixels"],
     "TrackerSimHitInputCollections": ["VertexEndcapCollection"],
     "TrackerHitInputRelations": ["VXDEndcapHitsRelations_realDigi"],
     "TrackerHitOutputCollections": ["VXDEndcapHits"+labelTrkDigiCollection],
-    "TrackerSimHitOutputCollections": ["VertexEndcapCollection_HTF"],
+    "TrackerHitConstituentsOutputCollections": ["VEPixels"+labelTrkDigiCollection],
+    "TrackerSimHitOutputCollections": ["VertexEndcapCollection"+labelTrkDigiCollection],
     "TrackerHitOutputRelations": ["VXDEndcapHitsRelations"+labelTrkDigiCollection],
     "TimeLowerLimit": ["-0.09"],
     "TimeUpperLimit": ["0.15"],
@@ -904,10 +908,12 @@ HitTimeFilter_ITB.OutputLevel = INFO
 HitTimeFilter_ITB.ProcessorType = "FilterTimeHits"
 HitTimeFilter_ITB.Parameters = {
     "TrackerHitInputCollections": ["ITBarrelHits_realDigi"],
+    "TrackerHitConstituentsInputCollections": ["IBPixels"],
     "TrackerSimHitInputCollections": ["InnerTrackerBarrelCollection"],
     "TrackerHitInputRelations": ["ITBarrelHitsRelations_realDigi"],
     "TrackerHitOutputCollections": ["ITBarrelHits"+labelTrkDigiCollection],
-    "TrackerSimHitOutputCollections": ["InnerTrackerBarrelCollection_HTF"],
+    "TrackerHitConstituentsOutputCollections": ["IBPixels"+labelTrkDigiCollection],
+    "TrackerSimHitOutputCollections": ["InnerTrackerBarrelCollection"+labelTrkDigiCollection],
     "TrackerHitOutputRelations": ["ITBarrelHitsRelations"+labelTrkDigiCollection],
     "TimeLowerLimit": ["-0.18"],
     "TimeUpperLimit": ["0.3"],
@@ -919,10 +925,12 @@ HitTimeFilter_ITE.OutputLevel = INFO
 HitTimeFilter_ITE.ProcessorType = "FilterTimeHits"
 HitTimeFilter_ITE.Parameters = {
     "TrackerHitInputCollections": ["ITEndcapHits_realDigi"],
+    "TrackerHitConstituentsInputCollections": ["IEPixels"],
     "TrackerSimHitInputCollections": ["InnerTrackerEndcapCollection"],
     "TrackerHitInputRelations": ["ITEndcapHitsRelations_realDigi"],
     "TrackerHitOutputCollections": ["ITEndcapHits"+labelTrkDigiCollection],
-    "TrackerSimHitOutputCollections": ["InnerTrackerEndcapCollection_HTF"],
+    "TrackerHitConstituentsOutputCollections": ["IEPixels"+labelTrkDigiCollection],
+    "TrackerSimHitOutputCollections": ["InnerTrackerEndcapCollection"+labelTrkDigiCollection],
     "TrackerHitOutputRelations": ["ITEndcapHitsRelations"+labelTrkDigiCollection],
     "TimeLowerLimit": ["-0.18"],
     "TimeUpperLimit": ["0.3"],
@@ -935,10 +943,12 @@ HitTimeFilter_OTB.OutputLevel = INFO
 HitTimeFilter_OTB.ProcessorType = "FilterTimeHits"
 HitTimeFilter_OTB.Parameters = {
     "TrackerHitInputCollections": ["OTBarrelHits_realDigi"],
+    "TrackerHitConstituentsInputCollections": ["OBPixels"],
     "TrackerSimHitInputCollections": ["OuterTrackerBarrelCollection"],
     "TrackerHitInputRelations": ["OTBarrelHitsRelations_realDigi"],
     "TrackerHitOutputCollections": ["OTBarrelHits"+labelTrkDigiCollection],
-    "TrackerSimHitOutputCollections": ["OuterTrackerBarrelCollection_HTF"],
+    "TrackerHitConstituentsOutputCollections": ["OBPixels"+labelTrkDigiCollection],
+    "TrackerSimHitOutputCollections": ["OuterTrackerBarrelCollection"+labelTrkDigiCollection],
     "TrackerHitOutputRelations": ["OTBarrelHitsRelations"+labelTrkDigiCollection],
     "TimeLowerLimit": ["-0.18"],
     "TimeUpperLimit": ["0.3"],
@@ -950,10 +960,12 @@ HitTimeFilter_OTE.OutputLevel = INFO
 HitTimeFilter_OTE.ProcessorType = "FilterTimeHits"
 HitTimeFilter_OTE.Parameters = {
     "TrackerHitInputCollections": ["OTEndcapHits_realDigi"],
+    "TrackerHitConstituentsInputCollections": ["OEPixels"],
     "TrackerSimHitInputCollections": ["OuterTrackerEndcapCollection"],
     "TrackerHitInputRelations": ["OTEndcapHitsRelations_realDigi"],
     "TrackerHitOutputCollections": ["OTEndcapHits"+labelTrkDigiCollection],
-    "TrackerSimHitOutputCollections": ["OuterTrackerEndcapCollection_HTF"],
+    "TrackerHitConstituentsOutputCollections": ["OEPixels"+labelTrkDigiCollection],
+    "TrackerSimHitOutputCollections": ["OuterTrackerEndcapCollection"+labelTrkDigiCollection],
     "TrackerHitOutputRelations": ["OTEndcapHitsRelations"+labelTrkDigiCollection],
     "TimeLowerLimit": ["-0.18"],
     "TimeUpperLimit": ["0.3"],
