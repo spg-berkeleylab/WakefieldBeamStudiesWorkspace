@@ -40,6 +40,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--OverlayIPNumberBackground",
+    help="Number of background files used for IP overlay",
+    type=str,
+    default="1", #Magic number associated to the specific simulation setup
+)
+
+parser.add_argument(
     "--doOverlayFull",
     help="Do BIB overlay",
     action="store_true",
@@ -763,7 +770,7 @@ OverlayIP.Parameters = {
     "MCPhysicsParticleCollectionName": ["MCPhysicsParticles_IP"],
     "MergeMCParticles": ["true"],
     "NBunchtrain": ["1"],
-    "NumberBackground": ["1"],
+    "NumberBackground": [the_args.OverlayIPNumberBackground],
     "PhysicsBX": ["1"],
     "Poisson_random_NOverlay": ["false"],
     "RandomBx": ["false"],
