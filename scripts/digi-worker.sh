@@ -10,9 +10,9 @@
 # Settings
 
 IN_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/digi/MuColl_v1/single-particles/single-nu/"
-OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/digi/MuColl_v1/bib-only/electron_electron_flat/"
-BIB_FILES="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/MuColl_v1/bib-only/electron_electron_flat/sim-out-merged.slcio"
-NBIB_EVENTS=15 #electron_positron_round: 145, electron_positron_flat: 17, electron_electron_flat: 15, electron_electron_round: 0
+OUT_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/digi/MuColl_v1/bib-only/electron_positron_round/"
+BIB_FILES="/global/cfs/cdirs/atlas/spgriso/WFA/data/WarpX-out/ddsim/MuColl_v1/bib-only/electron_positron_round/sim-out-merged.slcio"
+NBIB_EVENTS=145 #electron_positron_round: 145, electron_positron_flat: 17, electron_electron_flat: 15, electron_electron_round: 0
 
 CONFIG_PATH="/global/cfs/cdirs/atlas/spgriso/WFA/WakefieldBeamStudiesWorkspace/configs"
 CONFIG_FILE="digi_steer.py" #relative to $CONFIG_PATH
@@ -122,7 +122,7 @@ fi
 NOBIB_OPTS="--OverlayFullPathToMuPlus \"\" --OverlayFullPathToMuMinus \"\" --OverlayFullNumberBackground 0"
 OVERLAYIP_OPTS="--doOverlayIP --OverlayIPBackgroundFileNames ${BIB_FILES} --OverlayIPNumberBackground ${NBIB_EVENTS}"
 export WCD_GEO=${GEO_CONFIG}
-k4run --num-events ${N_EVENTS_PER_JOB} ${CONFIG_FILE} --LcioEvent.Files ${IN_FILE} ${NOBIB_OPTS} ${OVERLAYIP_OPTS} &> ${OUT_FILE_PREFIX}.log
+k4run --num-events ${N_EVENTS_PER_JOB} ${CONFIG_FILE} --writeAll --LcioEvent.Files ${IN_FILE} ${NOBIB_OPTS} ${OVERLAYIP_OPTS} &> ${OUT_FILE_PREFIX}.log
 # --global.SkipNEvents=${N_SKIP_EVENTS}
 
 tell "k4run DONE."
@@ -132,7 +132,9 @@ tell "Copying output from current folder ($PWD) to ${OUT_PATH}"
 ls -lRh
 tell "----------"
 
-copyout output_digi_light.slcio ${OUT_FILE_PREFIX}_light.slcio
+if [ -r output_digi_light.slcio ]; then
+    copyout output_digi_light.slcio ${OUT_FILE_PREFIX}_light.slcio
+fi
 if [ -r output_digi.slcio ]; then
     copyout output_digi.slcio ${OUT_FILE_PREFIX}_full.slcio
 fi
