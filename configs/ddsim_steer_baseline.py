@@ -9,7 +9,7 @@ SIM = DD4hepSimulation()
 geometryFile = os.environ.get("WCD_GEO")
 if (geometryFile == ""):
     print('ERROR: invalid / no geometry provided in $WCD_GEO environment variable. Please specify one first')
-    exit()          
+    exit()
 SIM.compactFile = geometryFile
 ## Lorentz boost for the crossing angle, in radian!
 SIM.crossingAngleBoost = 0.0
@@ -123,6 +123,46 @@ SIM.filter.mapDetFilter = {}
 
 ##  default filter for tracking sensitive detectors; this is applied if no other filter is used for a tracker
 SIM.filter.tracker = "edep1kev"
+
+
+################################################################################
+## Configuration for the DDG4 ParticleGun 
+################################################################################
+
+##  direction of the particle gun, 3 vector 
+SIM.gun.direction = (0, 0, 1)
+
+## choose the distribution of the random direction for theta
+## 
+##     Options for random distributions:
+## 
+##     'uniform' is the default distribution, flat in theta
+##     'cos(theta)' is flat in cos(theta)
+##     'eta', or 'pseudorapidity' is flat in pseudorapity
+##     'ffbar' is distributed according to 1+cos^2(theta)
+## 
+##     Setting a distribution will set isotrop = True
+##     
+SIM.gun.distribution = 'uniform'
+SIM.gun.energy = 10.0*GeV
+
+##  isotropic distribution for the particle gun
+## 
+##     use the options phiMin, phiMax, thetaMin, and thetaMax to limit the range of randomly distributed directions
+##     if one of these options is not None the random distribution will be set to True and cannot be turned off!
+##     
+SIM.gun.isotrop = True
+SIM.gun.multiplicity = 1
+SIM.gun.particle = "mu-"
+## polar-angle range for random distribution
+SIM.gun.thetaMax = 170*deg
+SIM.gun.thetaMin = 10*deg
+## azimuthal-angle range for random distribution
+SIM.gun.phiMax = None
+SIM.gun.phiMin = None
+
+##  position of the particle gun, 3 vector 
+SIM.gun.position = (0.0, 0.0, 0.0)
 
 
 ################################################################################
