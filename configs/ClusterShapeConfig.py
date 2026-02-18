@@ -3,6 +3,34 @@ import os
 
 from Configurables import LcioEvent, EventDataSvc, MarlinProcessorWrapper
 from k4MarlinWrapper.parseConstants import *
+from k4FWCore.parseArgs import parser
+
+parser.add_argument(
+    "--doTrkDigiSimple",
+    help="Only use collections of simplified tracker digitization",
+    action="store_true",
+    default=False,
+)
+parser.add_argument(
+    "--withClusterFilter",
+    help="Use relations collections created after applying cluster filter cuts and renamed without suffix _HTF",
+    action="store_true",
+    default=False,
+)
+parser.add_argument(
+    "--muColDetGeo",
+    help="Detector geometry, 0-MuColv1 and 1-Wakefield_v0",
+    type=str,
+    default=0,
+)
+
+
+the_args = parser.parse_known_args()[0]
+
+if not (the_args.muColDetGeo=="0" or the_args.muColDetGeo=="1"):
+    raise ValueError(f"Invalid detector geometry provided. Acceptable values are 0-MuColv1 and 1-Wakefieldv0. Provided value {the_args.muColDetGeo}. Rerun with correct option for --muColDetGeo")
+
+
 algList = []
 evtsvc = EventDataSvc()
 
@@ -53,6 +81,11 @@ InitDD4hep.Parameters = {
                          "EncodingStringParameterName": ["GlobalTrackerReadoutID"]
                          }
 
+if the_args.muColDetGeo=="1":
+    InitDD4hep.Parameters = {"DD4hepXMLFile": ["/global/cfs/projectdirs/atlas/arastogi/WFA/detector-geometries/Wakefield_v0/Wakefield_v0.xml"],
+                             "EncodingStringParameterName": ["GlobalTrackerReadoutID"]
+                             }
+
 MyTrackTruth = MarlinProcessorWrapper("MyTrackTruth")
 MyTrackTruth.OutputLevel = WARNING
 MyTrackTruth.ProcessorType = "TrackTruthProc"
@@ -60,57 +93,56 @@ MyTrackTruth.Parameters = {
                            "MCParticleCollection": ["MCParticle"],
                            "Particle2TrackRelationName": ["MCParticle_SiTracks"],
                            "TrackCollection": ["SiTracks"],
-                           "TrackerHit2SimTrackerHitRelationName": ["VBTrackerHitsRelations", "IBTrackerHitsRelations", "OBTrackerHitsRelations", "VETrackerHitsRelations", "IETrackerHitsRelations", "OETrackerHitsRelations"]
+                           "TrackerHit2SimTrackerHitRelationName": ["VXDBarrelHitsRelations", "ITBarrelHitsRelations", "OTBarrelHitsRelations", "VXDEndcapHitsRelations", "ITEndcapHitsRelations", "OTEndcapHitsRelations"]
                            }
+
+relSuffix = "_HTF"
+if the_args.withClusterFilter:
+    relSuffix = ""
 
 MyClusterShapeAnalysis = MarlinProcessorWrapper("MyClusterShapeAnalysis")
 MyClusterShapeAnalysis.OutputLevel = WARNING
 MyClusterShapeAnalysis.ProcessorType = "ClusterShapeHistProc"
-# MyClusterShapeAnalysis.Parameters = {
-#                                      "IBRelationCollection": ["IBTrackerHitsRelations"],
-#                                      "IBTrackerHitsCollection": ["IBTrackerHits"],
-#                                      "IERelationCollection": ["IETrackerHitsRelations"],
-#                                      "IETrackerHitsCollection": ["IETrackerHits"],
-#                                      "MCParticleCollection": ["MCParticle"],
-#                                      "MCTrackRelationCollection": ["MCParticle_SiTracks"],
-#                                      "OBRelationCollection": ["OBTrackerHitsRelations"],
-#                                      "OBTrackerHitsCollection": ["OBTrackerHits"],
-#                                      "OERelationCollection": ["OTEndcapHitsRelations"],
-#                                      "OETrackerHitsCollection": ["OTEndcapHits"],
-#                                      "TrackCollection": ["SiTracks"],
-#                                      "VBRelationCollection": ["VBTrackerHitsRelations"],
-#                                      "VBTrackerHitsCollection": ["VBTrackerHits"],
-#                                      "VERelationCollection": ["VETrackerHitsRelations"],
-#                                      "VETrackerHitsCollection": ["VETrackerHits"]
-#                                      }
 MyClusterShapeAnalysis.Parameters = {
-                                     "IBRelationCollection": [""],
-                                     "IBTrackerHitsCollection": [""],
-                                     "IERelationCollection": [""],
-                                     "IETrackerHitsCollection": [""],
+                                     "IBRelationCollection": ["ITBarrelHitsRelations"+relSuffix],
+                                     "IBTrackerHitsCollection": ["ITBarrelHits"],
+                                     "IERelationCollection": ["ITEndcapHitsRelations"+relSuffix],
+                                     "IETrackerHitsCollection": ["ITEndcapHits"],
                                      "MCParticleCollection": ["MCParticle"],
-                                     "MCTrackRelationCollection": [""],
-                                     "OBRelationCollection": [""],
-                                     "OBTrackerHitsCollection": [""],
-                                     "OERelationCollection": [""],
-                                     "OETrackerHitsCollection": [""],
-                                     "TrackCollection": [""],
-                                     "VBRelationCollection": ["VXDBarrelHitsRelations_realDigi"],
-                                     "VBTrackerHitsCollection": ["VXDBarrelHits_realDigi"],
-                                     "VERelationCollection": ["VXDEndcapHitsRelations_realDigi"],
-                                     "VETrackerHitsCollection": ["VXDEndcapHits_realDigi"]
-                                     }
+                                     "MCTrackRelationCollection": ["MCParticle_SiTracks"],
+                                     "OBRelationCollection": ["OTBarrelHitsRelations"+relSuffix],
+                                     "OBTrackerHitsCollection": ["OTBarrelHits"],
+                                     "OERelationCollection": ["OTEndcapHitsRelations"+relSuffix],
+                                     "OETrackerHitsCollection": ["OTEndcapHits"],
+                                     "TrackCollection": ["SiTracks"],
+                                     "VBRelationCollection": ["VXDBarrelHitsRelations"+relSuffix],
+                                     "VBTrackerHitsCollection": ["VXDBarrelHits"],
+                                     "VERelationCollection": ["VXDEndcapHitsRelations"+relSuffix],
+                                     "VETrackerHitsCollection": ["VXDEndcapHits"],
+                                     "muColDet": [the_args.muColDetGeo]
+}
+
+
 
 algList.append(MyAIDAProcessor)
 algList.append(EventNumber)
 algList.append(Config)
 algList.append(InitDD4hep)
+
+if (the_args.doTrkDigiSimple):
+    MyClusterShapeAnalysis.Parameters["IBRelationCollection"]=["ITBarrelHitsRelations"]
+    MyClusterShapeAnalysis.Parameters["IERelationCollection"]=["ITEndcapHitsRelations"]
+    MyClusterShapeAnalysis.Parameters["OBRelationCollection"]=["OTBarrelHitsRelations"]
+    MyClusterShapeAnalysis.Parameters["OERelationCollection"]=["OTEndcapHitsRelations"]
+    MyClusterShapeAnalysis.Parameters["VBRelationCollection"]=["VXDBarrelHitsRelations"]
+    MyClusterShapeAnalysis.Parameters["VERelationCollection"]=["VXDEndcapHitsRelations"]
+
 algList.append(MyClusterShapeAnalysis)
 
 from Configurables import ApplicationMgr
 ApplicationMgr( TopAlg = algList,
                 EvtSel = 'NONE',
+                EvtMax   = 10,
                 ExtSvc = [evtsvc],
-                EvtMax   = -1,
                 OutputLevel=WARNING
               )

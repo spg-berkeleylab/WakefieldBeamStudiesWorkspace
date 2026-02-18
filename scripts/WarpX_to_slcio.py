@@ -175,7 +175,7 @@ def main():
             if args.filterGenParticles:
                 if pid==22 and abs(lvec.Eta())<5:
                     col.addElement(particle)
-                if abs(pid)==11 and lvec.Pt()>0.01:
+                if abs(pid)==11 and lvec.Pt()>0.01 and abs(lvec.Eta())<2.5:
                     col.addElement(particle)
             else:
                 col.addElement(particle)

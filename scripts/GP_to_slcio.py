@@ -72,12 +72,14 @@ def main():
     # Initialize the LCIO file writer
     wrt = IOIMPL.LCFactory.getInstance().createLCWriter()
     filePath = ""
+    wrt = openLCIO(filePath, wrt)
     
+    """
     if args.numParticlesPerFile<0:
         filePath = os.path.join(args.outputDir, "out.slcio")
     else:
         filePath = os.path.join(args.outputDir, f"out_IP_{countFiles}.slcio")
-
+ 
     print(f"Creating file {filePath}")
     wrt = openLCIO(filePath, wrt)
 
@@ -118,7 +120,7 @@ def main():
 
         # Adding particle to the collection
         if args.filterGenParticles:
-            if lvec.Pt()>0.01:
+            if lvec.Pt()>0.01 and abs(lvec.Eta())<2.5:
                 col.addElement(particle)
         else:
             col.addElement(particle)
@@ -132,6 +134,18 @@ def main():
             print(f"Creating file {filePath}")
             col, evt = lcioEvt(col, evt)
             wrt = openLCIO(filePath, wrt)
+    """
+    
+    out_file = args.outputDir+"/hist_CP.root"
+    hstfile = ROOT.TFile(out_file, "RECREATE")
+    h_px = ROOT.TH1F("CP_px",";px [GeV] ;Entries", 1000, -5000, 5000)
+    h_py = ROOT.TH1F("CP_py",";py [GeV] ;Entries", 1000, -5000, 5000)
+    h_pz = ROOT.TH1F("CP_pz",";pz [GeV] ;Entries", 1000, -5000, 5000)
+    h_pt = ROOT.TH1F("CP_pt",";pt [GeV] ;Entries", 1000, 0, 1000)
+    h_energy = ROOT.TH1F("CP_E",";E [GeV] ;Entries", 1000, 0, 10000)
+    h_energy_np = ROOT.TH1F("CP_E_np",";E [GeV] ;Entries", 1000, 0, 10000)
+    h_eta = ROOT.TH1F("CP_eta",";Eta;Entries", 5000, -2.5, 2.5)
+    h_phi = ROOT.TH1F("CP_phi",";Phi [rad] ;Entries", 6400, -3.2, 3.2)
 
     if args.numParticlesPerFile>0:
         wrt.writeEvent(evt)
@@ -143,23 +157,38 @@ def main():
 
     #coherent pairs
     data = np.loadtxt(args.inputDir + '/coh1.dat')
+    ncoh1 = len(data)
     data = np.vstack((data,np.loadtxt(args.inputDir + '/coh2.dat')))
     E = data[:,0] #GeV, negative for positrons and positive for electrons
     x = data[:,1]*1000 #nm
     y = data[:,2]*1000 #nm
     z = data[:,3]*1000 #nm
-    xrad = data[:,4]/1000 #angle w.r.t. z-axis in x-z plane i.e. px/pz in radians
-    yrad = data[:,5]/1000 #angle w.r.t. z-axis in y-z plane i.e. py/pz in radians
-    m_e = 0.000511 #mass of electron in GeV                                                                                                                                                                       
+    xrad = data[:,4]/1000000 #angle w.r.t. z-axis in x-z plane i.e. px/pz in radians
+    yrad = data[:,5]/1000000 #angle w.r.t. z-axis in y-z plane i.e. py/pz in radians
+    m_e = 0.000511 #mass of electron in GeV
 
     for i in range(0,len(x)):
         lvec = ROOT.TLorentzVector()
-        if E[i]>0:
+        if E[i]>0: #electron
             pz = calcPz(xrad[i],yrad[i],E[i])
+            if i>=ncoh1: #CP produced from Beam-1
+                pz = pz*-1
             lvec.SetPxPyPzE(xrad[i]*pz,yrad[i]*pz,pz,E[i])
+            h_energy_np.Fill(E[i])
         else:
             pz = calcPz(xrad[i],yrad[i],-1*E[i])
+            if i>=ncoh1: #CP produced from Beam-2
+                pz = pz*-1
             lvec.SetPxPyPzE(xrad[i]*pz,yrad[i]*pz,pz,-1*E[i])
+            h_energy_np.Fill(-1*E[i])
+
+        h_px.Fill(lvec.Px())
+        h_py.Fill(lvec.Py())
+        h_pz.Fill(lvec.Pz())
+        h_energy.Fill(lvec.E())
+        h_pt.Fill(lvec.Pt())
+        h_phi.Fill(lvec.Phi())
+        h_eta.Fill(lvec.Eta())
 
 	# Creating the particle with original parameters
         particle = IMPL.MCParticleImpl()
@@ -178,7 +207,7 @@ def main():
         
         # Adding particle to the collection
         if args.filterGenParticles:
-            if lvec.Pt()>0.01:
+            if lvec.Pt()>0.01 and abs(lvec.Eta())<2.5:
                 col.addElement(particle)
         else:
             col.addElement(particle)
@@ -195,6 +224,17 @@ def main():
 
     wrt.writeEvent(evt)
     wrt.close()
+
+    h_px.Write()
+    h_py.Write()
+    h_pz.Write()
+    h_pt.Write()
+    h_eta.Write()
+    h_phi.Write()
+    h_energy_np.Write()
+    h_energy.Write()
+    hstfile.Close()
+
 
 if __name__ == "__main__":
     main()
